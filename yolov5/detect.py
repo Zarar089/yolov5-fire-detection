@@ -226,6 +226,8 @@ def run(
                     writer.writeheader()
                 writer.writerow(data)
 
+        fire_detected = false
+
         # Process predictions
         for i, det in enumerate(pred):  # per image
             seen += 1
@@ -257,6 +259,11 @@ def run(
                     label = names[c] if hide_conf else f"{names[c]}"
                     confidence = float(conf)
                     confidence_str = f"{confidence:.2f}"
+
+                    if confidence>0.6 and !fire_detected:
+                        LOGGER.info("Confidence: "str(confidence))
+                        fire_detected = true
+
 
                     if save_csv:
                         write_to_csv(p.name, label, confidence_str)
@@ -307,6 +314,7 @@ def run(
                         save_path = str(Path(save_path).with_suffix(".mp4"))  # force *.mp4 suffix on results videos
                         vid_writer[i] = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*"mp4v"), fps, (w, h))
                     vid_writer[i].write(im0)
+
 
         # Print time (inference-only)
         LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[1].dt * 1e3:.1f}ms")
